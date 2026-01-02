@@ -269,6 +269,20 @@
           register: install_driver_packages_2
           until: install_driver_packages_2 is succeeded
 
+    - name: Install NVIDIA Utils on Ubuntu
+      become: true
+      when: "ansible_distribution == 'Ubuntu'"
+      ignore_errors: true
+      apt:
+        name: ['nvidia-compute-utils-{{ driver_version }}={{ gpu_driver_version }}*', 'libnvidia-cfg1-{{ driver_version }}={{ gpu_driver_version}}*', 'nvidia-persistenced={{ gpu_driver_version}}*']
+        state: present
+        update_cache: true
+        force: yes
+      retries: 5
+      delay: 5
+      register: install_nvidia_utils_ubuntu
+      until: install_nvidia_utils_ubuntu is succeeded
+
     - name: Enable MIG with nvidia-smi
       become: true
       shell: nvidia-smi -mig 1
@@ -314,7 +328,7 @@
 
     - name: Install NVIDIA Fabric Manager on Ubuntu
       become: true
-      when: "driver_version | int <= 570 and ansible_distribution == 'Ubuntu' and dgx.stat.exists == True or driver_version | int <= 570 and ansible_distribution == 'Ubuntu' and l4t.stat.exists == True or driver_version | int <= 570 and ansible_distribution == 'Ubuntu' and nvswitch.stdout | int > 0"
+      when: "ansible_distribution == 'Ubuntu' and dgx.stat.exists == True or ansible_distribution == 'Ubuntu' and l4t.stat.exists == True or ansible_distribution == 'Ubuntu' and nvswitch.stdout | int > 0"
       ignore_errors: true
       apt:
         name: "nvidia-fabricmanager-{{ driver_version }}={{ gpu_driver_version}}-1"

@@ -65,8 +65,7 @@
      become: false
      lineinfile:
        path: '{{ ansible_user_dir }}/.bashrc'
-       insertafter: '^PATH='
-       line: 'PATH=$PATH:/snap/bin'
+       regexp: '.*\/snap.*'
        state: absent
 
    - name: add nvidia-smi alias
@@ -348,6 +347,7 @@
         - /run/nvidia
         - /etc/apt/sources.list.d/nvidia-docker
         - /etc/apt/sources.list.d/docker
+        - /etc/nvidia-container-runtime
 
    - name: Cleanup Directories
      ignore_errors: yes

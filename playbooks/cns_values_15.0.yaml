@@ -29,7 +29,7 @@ metallb_version: "0.14.9"
 kserve_version: "0.15"
 prometheus_stack: "70.3.0"
 prometheus_adapter: "4.13.0"
-grafana_operator: "v5.17.0"
+grafana_operator: "5.17.0"
 elastic_stack: "8.17.4"
 lws_version: "0.5.1"
 

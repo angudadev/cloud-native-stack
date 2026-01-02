@@ -342,7 +342,7 @@
       until: add_user_to_docker_group is succeeded
 
     - name: Configure CDI for Docker/Containerd
-      shell: nvidia-ctk runtime configure --runtime docker --cdi.enabled --nvidia-set-as-default; sed -i 's/^#root/root/' /etc/nvidia-container-runtime/config.toml
+      shell: "nvidia-ctk runtime configure --runtime docker --cdi.enabled --nvidia-set-as-default; nvidia-ctk runtime configure --runtime containerd --cdi.enabled --nvidia-set-as-default; nvidia-ctk config --config-file /usr/local/nvidia/toolkit/.config/nvidia-container-runtime/config.toml --in-place --set accept-nvidia-visible-devices-as-volume-mounts=true"
       become: true
       when: nvidia_docker_exists.rc >= 1 and container_runtime == 'cri-docker' or nvidia_docker_exists.rc >= 1 and container_runtime == 'containerd' 
       ignore_errors: true
@@ -352,7 +352,7 @@
       until: configure_cdi is succeeded
 
     - name: Configure CDI for CRI-O Container Runtime
-      shell: nvidia-ctk runtime configure --runtime crio --cdi.enabled --nvidia-set-as-default; sed -i 's/^#root/root/' /etc/nvidia-container-runtime/config.toml
+      shell: nvidia-ctk runtime configure --runtime crio --cdi.enabled --nvidia-set-as-default
       become: true
       when: nvidia_docker_exists.rc >= 1 and container_runtime == 'cri-o' 
       ignore_errors: true
@@ -360,6 +360,19 @@
       delay: 5
       register: configure_cdi
       until: configure_cdi is succeeded
+
+    - name: Configure GPU Operator NVIDIA Driver for Nvidia Container Runtime
+      become: true
+      when: cns_nvidia_driver == false
+      ignore_errors: true
+      lineinfile:
+        path: /etc/nvidia-container-runtime/config.toml
+        regexp: '^#root'
+        line: 'root'
+      retries: 5
+      delay: 5
+      register: configure_nvidia_driver
+      until: configure_nvidia_driver is succeeded
 
     - name: Reload the configurations
       become: true
